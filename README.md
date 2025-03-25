@@ -30,4 +30,10 @@ This is a Docker Swarm microservice web application made up of the docker servic
 ## 2. DevOps Information
 
 - Gitlab: The main runner for the CI/CD pipeline. Sets environment variables to create separate staging and production deployments.
-- Ansible: Configuration management tool used to 
+- Ansible: Configuration management tool used to run install scripts and docker-compose on various nodes
+- Docker Swarm: Container orchestration tool used for application reliability and healthcheck monitoring
+- Hashicorp Vault: Used for secrets management
+
+## 3. My Responsibilities
+
+All DevOps configurations was my responsibility. GitLab, Docker, Docker Swarm, Ansible, etc were all part of my responsibilties. Application code was the responsibility of other software developers.
