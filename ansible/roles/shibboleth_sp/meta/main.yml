@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: Andrew Kimball
+  role_name: shibboleth_sp
+  description: Run Shibboleth and Apache services in Docker Swarm Mode
+  min_ansible_version: 2.9
+  license: MIT
+
+  galaxy_tags: []
+
+dependencies: []

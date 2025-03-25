@@ -1,0 +1,76 @@
+version: "3.7"
+
+services:
+  shib:
+    image: ${SHIBBOLETH_IMAGE_NAME}:${SHIBBOLETH_IMAGE_TAG}
+    configs:
+      - source: shibboleth_shib2_conf
+        target: /etc/apache2/sites-available/shib2.conf
+        mode: 0440
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${SHIBBOLETH_SWARM_NODE_CONSTRAINT} == true
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: "10m"
+    networks:
+      - shibboleth
+    ports:
+      - "80:80"
+    secrets:
+      - source: shibboleth_attribute_map_xml
+        target: /etc/shibboleth/attribute-map.xml
+        mode: 0440
+      - source: shibboleth_metadata_xml
+        target: /etc/shibboleth/metadata.xml
+        mode: 0440
+      - source: shibboleth_shibboleth2_xml
+        target: /etc/shibboleth/shibboleth2.xml
+        mode: 0755
+      - source: shibboleth_sp_encrypt_cert
+        target: /etc/shibboleth/sp_encrypt_cert.pem
+        mode: 0440
+      - source: shibboleth_sp_encrypt_key
+        target: /etc/shibboleth/sp_encrypt_key.pem
+        mode: 0440
+      - source: shibboleth_sp_signing_cert
+        target: /etc/shibboleth/sp_signing_cert.pem
+        mode: 0440
+      - source: shibboleth_sp_signing_key
+        target: /etc/shibboleth/sp_signing_key.pem
+        mode: 0440
+
+configs:
+  shibboleth_shib2_conf:
+    external: true
+    name: shibboleth_shib2_v${SHIBBOLETH_SHIB2_CONF_VERSION}
+
+networks:
+  shibboleth:
+    external: true
+
+secrets:
+  shibboleth_attribute_map_xml:
+    external: true
+    name: shibboleth_attribute_map_v${SHIBBOLETH_ATTRIBUTE_MAP_XML_VERSION}
+  shibboleth_metadata_xml:
+    external: true
+    name: shibboleth_metadata_v${SHIBBOLETH_METADATA_XML_VERSION}
+  shibboleth_shibboleth2_xml:
+    external: true
+    name: shibboleth_shibboleth2_v${SHIBBOLETH_SHIBBOLETH2_XML_VERSION}
+  shibboleth_sp_encrypt_cert:
+    external: true
+    name: shibboleth_sp_encrypt_cert_v${SHIBBOLETH_SP_ENCRYPT_CERT_VERSION}
+  shibboleth_sp_encrypt_key:
+    external: true
+    name: shibboleth_sp_encrypt_key_v${SHIBBOLETH_SP_ENCRYPT_KEY_VERSION}
+  shibboleth_sp_signing_cert:
+    external: true
+    name: shibboleth_sp_signing_cert_v${SHIBBOLETH_SP_SIGNING_CERT_VERSION}
+  shibboleth_sp_signing_key:
+    external: true
+    name: shibboleth_sp_signing_key_v${SHIBBOLETH_SP_SIGNING_KEY_VERSION}

@@ -1,0 +1,49 @@
+---
+shibboleth:
+  image:
+    name: "shibboleth_dev"
+    tag: "latest"
+  is_development: true
+  swarm_node_constraint: "shibboleth"
+  templates:
+    configs:
+      shib2:
+        path: "apache/shib2.conf.j2"
+        values:
+          admin_email: "info@example.com"
+          fqdn: "www.example.com"
+        version: 1
+    secrets:
+      attribute_map:
+        path: "shibboleth/attribute_map.xml.j2"
+        version: 1
+      metadata:
+        path: "shibboleth/metadata.xml.j2"
+        value: "test"
+        version: 1
+      shibboleth2:
+        path: "shibboleth/shibboleth2.xml.j2"
+        values:
+          sp_entityID: "1234"
+          idp_entityID: "1234"
+        version: 1
+      sp_encrypt_cert:
+        path: "shibboleth/sp_encrypt_cert.pem.j2"
+        values:
+          sp_cert_pem: "1234"
+        version: 1
+      sp_encrypt_key:
+        path: "shibboleth/sp_encrypt_key.pem.j2"
+        values:
+          sp_key_pem: "1234"
+        version: 1
+      sp_signing_cert:
+        path: "shibboleth/sp_signing_cert.pem.j2"
+        values:
+          sp_cert_pem: "1234"
+        version: 1
+      sp_signing_key:
+        path: "shibboleth/sp_signing_key.pem.j2"
+        values:
+          sp_key_pem: "1234"
+        version: 1

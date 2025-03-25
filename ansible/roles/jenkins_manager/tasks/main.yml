@@ -1,0 +1,33 @@
+---
+- name: create example config directory
+  file:
+    path: "{{ config_dir }}/jenkins"
+    mode: 0440
+    state: directory
+
+- name: copy docker compose file
+  copy:
+    src: docker-compose.yml
+    dest: "{{ config_dir }}/jenkins/docker-compose.yml"
+    mode: 0440
+
+- name: label jenkins swarm node
+  docker_node:
+    hostname: "{{ jenkins_swarm_node }}"
+    labels:
+      jenkins: "true"
+  tags:
+    - docker
+
+- name: start docker services
+  environment: "{{ docker_stack_env }}"
+  command: docker stack deploy -c {{ config_dir }}/jenkins/docker-compose.yml example
+  changed_when: false
+  tags:
+    - docker
+
+- name: display notification
+  debug:
+    msg: Docker services are deploying in the background. Check host to see progress.
+  tags:
+    - docker

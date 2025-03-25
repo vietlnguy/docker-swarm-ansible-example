@@ -1,0 +1,21 @@
+docker_swarm_manager:
+  hosts:
+    swarm-01:
+      ansible_host: example-stg01.example.example.int
+      swarm_labels:
+        - "postgres-primary"
+        - "shibboleth"
+        - "example"
+        - "jenkins"
+        - "alertmanager-1"
+        - "postgres-exporter"
+        - "prometheus"
+        - "delayed-jobs"
+
+docker_swarm_worker:
+  hosts:
+    swarm-02:
+      ansible_host: example-stg02.example.example.int
+      swarm_labels:
+        - "postgres-replica"
+        - "alertmanager-2"

@@ -1,0 +1,11 @@
+---
+- name: Create shibboleth docker image
+  docker_image:
+    build:
+      path: "{{ config_dir ~ '/shibboleth/'}}"
+      pull: yes
+    force_tag: yes
+    force_source: yes
+    name: "{{ shibboleth.image.name ~ ':' ~ shibboleth.image.tag }}"
+    source: build
+    state: present

@@ -1,0 +1,56 @@
+---
+- name: create nfs volume for /home/app/webapp/tmp
+  docker_volume:
+    name: example_tmp_data_dist
+    driver: local
+    driver_options:
+      type: nfs
+      o: "{{ 'addr=' ~ nfs_example_tmp_address ~ ',rw' }}"
+      device: ":{{ nfs_example_tmp_device }}"
+    state: present
+  tags: nfs_mount
+
+- name: create volume for gate_count
+  docker_volume:
+    name: gate_count
+    state: present
+  tags: gate_count_volume
+
+- name: create example config directory
+  file:
+    path: "{{ config_dir }}/example"
+    mode: 0440
+    state: directory
+
+- name: copy docker compose file
+  copy:
+    src: docker-compose.yml
+    dest: "{{ config_dir }}/example/docker-compose.yml"
+    mode: 0440
+
+- name: label example swarm node
+  docker_node:
+    hostname: "{{ example_swarm_node }}"
+    labels:
+      example: "true"
+  tags:
+    - docker
+
+- name: create docker secrets for rails configs
+  docker_secret:
+    name: example_rails_{{ item }}_config_{{ lookup('vars', 'rails_' + item + '_config_version') }}
+    data: '{{ lookup("template", item + ".yml.j2") }}'
+    state: present
+  loop:
+    - database
+    - secrets
+  no_log: true
+  tags:
+    - docker
+
+- name: start docker services
+  environment: "{{ docker_stack_env }}"
+  command: docker stack deploy -c {{ config_dir }}/example/docker-compose.yml example
+  changed_when: false
+  tags:
+    - docker

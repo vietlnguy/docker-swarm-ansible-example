@@ -1,0 +1,11 @@
+---
+
+python_pip_packages:
+  - "{% if ansible_python_version is version_compare('3.0.0', '<') %}python-pip{% else %}python3-pip{% endif %}"
+
+python_sni_support_packages:
+  - "{% if ansible_python_version is version_compare('3.0.0', '<') %}python-dev{% else %}python3-dev{% endif %}"
+  - libssl-dev
+  - libffi-dev
+
+default_docker_dependencies: []

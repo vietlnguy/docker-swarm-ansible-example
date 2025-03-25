@@ -1,0 +1,68 @@
+---
+- name: Create Shibboleth config directory
+  file:
+    path: "{{ config_dir ~ '/shibboleth/'}}"
+    state: directory
+  tags:
+    - shibboleth
+
+- name: copy files
+  copy:
+    src: files/
+    dest: "{{ config_dir ~ '/shibboleth/'}}"
+  tags:
+    - shibboleth
+
+# If is_development = true then build the docker image
+- name: "Build docker image"
+  import_tasks: "./dev/build_docker_image.yml"
+  when: shibboleth.is_development | default (false) == true
+  tags:
+    - docker
+    - shibboleth
+
+- name: Create Shibboleth docker secrets
+  docker_secret:
+    name: shibboleth_{{ item.key }}_v{{ item.value.version }}
+    data: "{{ lookup('template', item.value.path) }}"
+    state: present
+  loop: "{{ shibboleth.templates.secrets | dict2items }}"
+  no_log: true
+  tags:
+    - docker
+    - shibboleth
+
+- name: Create Shibboleth docker configs
+  docker_config:
+    name: shibboleth_{{ item.key }}_v{{ item.value.version }}
+    data: "{{ lookup('template', item.value.path) }}"
+    state: present
+  loop: "{{ shibboleth.templates.configs | dict2items }}"
+  no_log: true
+  tags:
+    - docker
+    - shibboleth
+
+- name: Deploy Shibboleth
+  docker_stack:
+    name: "shibboleth"
+    compose:
+      - "{{ config_dir ~ '/shibboleth/docker-compose.yml'}}"
+    state: present
+  changed_when: false
+  environment:
+    SHIBBOLETH_IMAGE_NAME: "{{ shibboleth.image.name }}"
+    SHIBBOLETH_IMAGE_TAG: "{{ shibboleth.image.tag }}"
+    SHIBBOLETH_ATTRIBUTE_MAP_XML_VERSION: "{{ shibboleth.templates.secrets.attribute_map.version }}"
+    SHIBBOLETH_METADATA_XML_VERSION: "{{ shibboleth.templates.secrets.metadata.version }}"
+    SHIBBOLETH_SHIB2_CONF_VERSION: "{{ shibboleth.templates.configs.shib2.version }}"
+    SHIBBOLETH_SHIBBOLETH2_XML_VERSION: "{{ shibboleth.templates.secrets.shibboleth2.version }}"
+    SHIBBOLETH_SP_ENCRYPT_CERT_VERSION: "{{ shibboleth.templates.secrets.sp_encrypt_cert.version }}"
+    SHIBBOLETH_SP_ENCRYPT_KEY_VERSION: "{{ shibboleth.templates.secrets.sp_encrypt_key.version }}"
+    SHIBBOLETH_SP_SIGNING_CERT_VERSION: "{{ shibboleth.templates.secrets.sp_signing_cert.version }}"
+    SHIBBOLETH_SP_SIGNING_KEY_VERSION: "{{ shibboleth.templates.secrets.sp_signing_key.version }}"
+    SHIBBOLETH_SWARM_NODE_CONSTRAINT: "{{ shibboleth.swarm_node_constraint }}"
+  no_log: true
+  tags:
+    - docker
+    - shibboleth

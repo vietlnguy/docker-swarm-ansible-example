@@ -1,0 +1,14 @@
+---
+collections:
+  - name: nginxinc.nginx_core
+    version: 0.3.0
+
+roles:
+  - name: atosatto.docker-swarm
+    src: https://example/devops/ansible/ansible-dockerswarm.git
+    scm: git
+    version: master
+
+  - name: shibboleth_sp
+    src: https://github.com/example-libraries/ansible_shibboleth_sp.git
+    scm: git

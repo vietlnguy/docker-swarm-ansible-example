@@ -1,0 +1,75 @@
+---
+- name: Install deps
+  hosts: docker_swarm_manager
+  become: true
+  tasks:
+  - ansible.builtin.pip:
+      name:
+        - jsondiff
+        - passlib
+        - pyyaml
+        - requests<2.32.0
+        - urllib3<2.0.0
+
+- name: Provision Docker Swarm Cluster
+  hosts: all
+  become: true
+  pre_tasks:
+    - name: Install nfs client
+      ansible.builtin.package:
+        name: nfs-utils
+        state: present
+  tasks:
+    - ansible.builtin.import_role:
+        name: atosatto.docker-swarm
+
+- name: Deploy application
+  hosts: docker_swarm_manager
+  become: true
+  gather_facts: true
+  tasks:
+    - ansible.builtin.import_role:
+        name: postgres_primary_manager
+      tags: postgres_primary_manager
+    - ansible.builtin.import_role:
+        name: ezpaarse_manager
+      tags: ezpaarse_manager
+    - ansible.builtin.import_role:
+        name: shibboleth_sp
+        tasks_from: create_docker_network
+      tags: shibboleth_sp
+    - ansible.builtin.import_role:
+        name: shibboleth_sp
+      tags: shibboleth_sp
+    - ansible.builtin.import_role:
+        name: example_manager
+      tags: example_manager
+    - ansible.builtin.import_role:
+        name: python_jobs_manager
+      tags: python_jobs_manager
+    - ansible.builtin.import_role:
+        name: jenkins_manager
+      tags: jenkins_manager
+    - ansible.builtin.import_role:
+        name: monitoring_manager
+      tags: monitoring_manager
+    
+#   # We do the following 4 tasks before doing the postgres replica task because errors will occur when example_app does not finish db migrations.
+#   # Commenting out this job because it's flaky, but may need it again one day...
+#
+#   - name: "Get example 1 container name"
+#     become: True
+#     shell:
+#       "docker ps -n 1 -f name=example_app.1 --format \"{{ '{{' }}.Names{{ '}}' }}\""
+#     register: container_name
+#   - name: "Wait for example app container 1 to finish booting"
+#     become: True
+#     shell:
+#       "docker inspect {{ container_name.stdout_lines[0] }} --format=\"{{ '{{' }}.State.Health.Status{{  '}}' }}\""
+#     register: result
+#     until: result.stdout == 'healthy'
+#     retries: 10
+#     delay: 20
+#   - ansible.builtin.import_role:
+#       name: postgres_replica_manager
+#     tags: postgres_replica_manager
